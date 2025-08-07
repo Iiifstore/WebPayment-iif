@@ -29,7 +29,11 @@
         }
         
         body {
-            background-color: var(--bg-color);
+            background-color: #0a1a3a;
+            background-image: 
+                linear-gradient(rgba(10, 26, 58, 0.8), rgba(10, 26, 58, 0.8)),
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M20,5 L30,35 L5,40 L80,95 L70,65 L95,60 Z" fill="none" stroke="%2300a8ff" stroke-width="1" opacity="0.3"/></svg>');
+            background-size: cover;
             color: var(--primary-color);
             font-family: 'Archivo', sans-serif;
             display: flex;
@@ -38,6 +42,18 @@
             min-height: 100vh;
             padding: 2rem;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(106, 90, 249, 0.1) 0%, rgba(214, 110, 253, 0.1) 100%);
+            z-index: -1;
         }
         
         .container {
@@ -48,6 +64,12 @@
             align-items: center;
             text-align: center;
             position: relative;
+            background-color: var(--bg-color);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            border: var(--border-width) solid var(--primary-color);
+            box-shadow: 0 0 30px rgba(0, 168, 255, 0.5), 
+                        var(--shadow-offset) var(--shadow-offset) 0px var(--primary-color);
         }
         
         .site-logo {
@@ -332,9 +354,86 @@
                 transform: scale(1);
             }
         }
+
+        /* Enhanced Lightning effect animation */
+        @keyframes lightning {
+            0% {
+                opacity: 0;
+                transform: translateY(-100%) skewX(-10deg);
+            }
+            5% {
+                opacity: 0.8;
+                transform: translateY(0) skewX(5deg);
+            }
+            6% {
+                opacity: 0;
+                transform: translateY(10%) skewX(0deg);
+            }
+            7% {
+                opacity: 0.6;
+                transform: translateY(0) skewX(-5deg);
+            }
+            8% {
+                opacity: 0;
+                transform: translateY(5%) skewX(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(0) skewX(0deg);
+            }
+        }
+
+        .lightning {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(0, 168, 255, 0.3) 0%, 
+                rgba(0, 168, 255, 0.1) 20%,
+                transparent 50%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+            animation: lightning 12s linear infinite;
+            transform-origin: top center;
+        }
+
+        .lightning:nth-child(2) {
+            animation-delay: 4s;
+            background: linear-gradient(to bottom, 
+                rgba(100, 200, 255, 0.2) 0%, 
+                rgba(100, 200, 255, 0.1) 20%,
+                transparent 50%);
+        }
+
+        .lightning:nth-child(3) {
+            animation-delay: 8s;
+            background: linear-gradient(to bottom, 
+                rgba(150, 220, 255, 0.25) 0%, 
+                rgba(150, 220, 255, 0.1) 20%,
+                transparent 50%);
+        }
+
+        /* Thunder sound effect (will only play if user interacts first) */
+        .thunder-sound {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    <div class="lightning"></div>
+    
+    <!-- Hidden audio elements for thunder sounds -->
+    <audio class="thunder-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-thunder-rumble-1683.mp3" type="audio/mpeg">
+    </audio>
+    
     <div class="container">
         <img src="https://files.catbox.moe/ecn166.jpg" alt="Logo" class="site-logo">
         <div class="sparkle"></div>
@@ -448,7 +547,34 @@
                     closeModal();
                 }
             });
+
+            // Play thunder sound randomly with lightning
+            const playThunder = () => {
+                const thunderSounds = document.querySelectorAll('.thunder-sound');
+                const randomSound = thunderSounds[Math.floor(Math.random() * thunderSounds.length)];
+                
+                // Reset and play
+                randomSound.currentTime = 0;
+                randomSound.play().catch(e => console.log("Audio play prevented:", e));
+            };
+
+            // Setup lightning with sound (after user interaction)
+            document.body.addEventListener('click', () => {
+                // Only setup once
+                document.body.removeEventListener('click', arguments.callee);
+                
+                // Play thunder randomly with some lightning flashes
+                const lightnings = document.querySelectorAll('.lightning');
+                lightnings.forEach(lightning => {
+                    lightning.addEventListener('animationstart', () => {
+                        // 30% chance to play thunder with each lightning
+                        if (Math.random() < 0.3) {
+                            playThunder();
+                        }
+                    });
+                });
+            }, { once: true });
         });
     </script>
 </body>
-</html>
+</html>            
